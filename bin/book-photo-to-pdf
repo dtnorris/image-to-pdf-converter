@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "optparse"
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+require "book_photo_to_pdf"
+
+options = {
+  diagnostics: false,
+  make_pdf: true,
+  python: ENV.fetch("BOOK_PHOTO_PYTHON", "python3")
+}
+
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: book-photo-to-pdf [options] INPUT_DIR"
+  opts.separator ""
+  opts.separator "Convert sequential JPG photographs of book pages into a conservatively cropped,"
+  opts.separator "normalized image-only PDF suitable for downstream OCR. Source photos are never modified."
+  opts.separator ""
+
+  opts.on("-b", "--build-dir DIR", "Generated-artifact directory (default: INPUT_DIR/build)") { |v| options[:build_dir] = v }
+  opts.on("-o", "--output FILE", "Output PDF path (default: BUILD_DIR/<input-dir>.pdf)") { |v| options[:pdf_path] = v }
+  opts.on("--diagnostics", "Write page-edge diagnostic images") { options[:diagnostics] = true }
+  opts.on("--no-pdf", "Process images and write QA report without assembling a PDF") { options[:make_pdf] = false }
+  opts.on("--python PATH", "Python interpreter for image processing (default: python3)") { |v| options[:python] = v }
+  opts.on("-v", "--version", "Print version") do
+    puts BookPhotoToPdf::VERSION
+    exit 0
+  end
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit 0
+  end
+end
+
+begin
+  parser.parse!
+  input_dir = ARGV.shift
+  raise OptionParser::MissingArgument, "INPUT_DIR" unless input_dir
+  raise OptionParser::InvalidArgument, "unexpected arguments: #{ARGV.join(" ")}" unless ARGV.empty?
+
+  result = BookPhotoToPdf::Runner.new(
+    input_dir: input_dir,
+    build_dir: options[:build_dir],
+    pdf_path: options[:pdf_path],
+    python: options[:python],
+    diagnostics: options[:diagnostics],
+    make_pdf: options[:make_pdf]
+  ).run
+
+  puts "Processed #{result.input_count} image#{result.input_count == 1 ? "" : "s"}."
+  if result.sequence_gaps.any?
+    puts "WARNING: numeric filename gaps detected: #{result.sequence_gaps.join(", ")}"
+  else
+    puts "Filename sequence: no numeric gaps detected."
+  end
+  puts "QA report: #{result.report_path}"
+  puts "PDF: #{result.pdf_path}" if result.pdf_path
+  puts "Build directory: #{result.build_dir}"
+rescue OptionParser::ParseError => e
+  warn "ERROR: #{e.message}"
+  warn parser
+  exit 2
+rescue BookPhotoToPdf::Error => e
+  warn "ERROR: #{e.message}"
+  exit 1
+end
