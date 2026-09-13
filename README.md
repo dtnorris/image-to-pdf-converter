@@ -52,11 +52,15 @@ On macOS:
 
 ```bash
 brew install img2pdf
-python3 -m venv .venv
+bin/setup
 source .venv/bin/activate
-pip install -r requirements.txt
-bundle install
 ```
+
+`bin/setup` is the repository-owned, idempotent dependency setup entry point. It
+installs the bundled Ruby dependencies, creates `.venv` with Python 3 when
+needed, and installs the checked-in `requirements.txt` into that repo-local
+environment. It does not install Homebrew/system packages or global Python
+packages.
 
 `img2pdf` is preferred because it embeds the already-processed JPEGs without an additional JPEG re-encode. If the executable is not available, the CLI falls back to PyMuPDF from `requirements.txt`.
 

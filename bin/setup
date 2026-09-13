@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+cd "$ROOT"
+
+if ! command -v bundle >/dev/null 2>&1; then
+  echo "ERROR: Bundler is required. Install the Bundler version from Gemfile.lock, then rerun bin/setup." >&2
+  exit 1
+fi
+
+PYTHON="${BOOK_PHOTO_PYTHON:-python3}"
+if ! command -v "$PYTHON" >/dev/null 2>&1; then
+  echo "ERROR: Python 3 is required. Set BOOK_PHOTO_PYTHON to a usable interpreter or install python3." >&2
+  exit 1
+fi
+
+echo "==> Ruby dependencies"
+bundle check >/dev/null 2>&1 || bundle install
+
+if [ ! -x .venv/bin/python ]; then
+  echo "==> Creating .venv with $PYTHON"
+  "$PYTHON" -m venv .venv
+else
+  echo "==> Reusing existing .venv"
+fi
+
+echo "==> Python dependencies"
+.venv/bin/python -m pip install -r requirements.txt
+
+echo
+echo "Setup complete."
+echo "For direct repo work, activate the Python environment with:"
+echo "  source .venv/bin/activate"
