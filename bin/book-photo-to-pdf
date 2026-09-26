@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "optparse"
+require "shellwords"
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "book_photo_to_pdf"
 
@@ -55,7 +56,11 @@ begin
     puts "Filename sequence: no numeric gaps detected."
   end
   puts "QA report: #{result.report_path}"
-  puts "PDF: #{result.pdf_path}" if result.pdf_path
+  if result.pdf_path
+    puts "PDF: #{result.pdf_path}"
+    catalog = File.expand_path("../../adventure-finder/bin/af-catalog", __dir__)
+    puts "Next: #{Shellwords.join([catalog, result.pdf_path])}"
+  end
   puts "Build directory: #{result.build_dir}"
 rescue OptionParser::ParseError => e
   warn "ERROR: #{e.message}"

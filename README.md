@@ -17,6 +17,8 @@ book-photo-to-pdf
     ↓
 normalized image-only PDF
     ↓
+adventure-finder/bin/af-catalog
+    ↓
 pdf-to-llm-md-converter
     ↓
 LLM Edition Markdown
@@ -96,6 +98,9 @@ ravenloft-test/
 ```
 
 The input manifest records the exact page order used for the run.
+
+After a successful PDF build, the CLI prints the exact `adventure-finder/bin/af-catalog`
+command for continuing the AdventureFinder catalog-ingest workflow.
 
 Useful options:
 
