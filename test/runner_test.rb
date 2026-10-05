@@ -2,6 +2,7 @@
 
 require "open3"
 require "rbconfig"
+require "shellwords"
 
 require_relative "test_helper"
 
@@ -30,14 +31,29 @@ class RunnerTest < Minitest::Test
   def test_cli_prints_adventure_finder_catalog_next_step_after_pdf_build
     root, input = copy_fixture_dir("synthetic")
     executable = File.expand_path("../bin/book-photo-to-pdf", __dir__)
-    expected_catalog = File.expand_path("../../adventure-finder/bin/af-catalog", File.dirname(executable))
+    expected_catalog = "/Users/davidnorris/code/adventure-finder/bin/af-catalog"
 
-    stdout, stderr, status = Open3.capture3(RbConfig.ruby, executable, input)
+    stdout, stderr, status = Open3.capture3({"AF_ADVENTURE_FINDER_ROOT" => nil}, RbConfig.ruby, executable, input)
 
     assert status.success?, stderr
     pdf_path = File.join(input, "build", "synthetic.pdf")
     assert_includes stdout, "PDF: #{pdf_path}"
     assert_includes stdout, "Next: #{expected_catalog} #{pdf_path}"
+  ensure
+    FileUtils.rm_rf(root) if root
+  end
+
+  def test_cli_quotes_explicit_detached_production_front_door
+    root, input = copy_fixture_dir("synthetic")
+    executable = File.expand_path("../bin/book-photo-to-pdf", __dir__)
+    front = File.join(root, "front door", "adventure-finder-production")
+    stdout, stderr, status = Open3.capture3(
+      {"AF_ADVENTURE_FINDER_ROOT" => front}, RbConfig.ruby, executable, input
+    )
+    assert status.success?, stderr
+    next_line = stdout.lines.find { |line| line.start_with?("Next: ") }
+    assert_equal [File.join(front, "bin", "af-catalog"), File.join(input, "build", "synthetic.pdf")],
+                 Shellwords.split(next_line.delete_prefix("Next: "))
   ensure
     FileUtils.rm_rf(root) if root
   end

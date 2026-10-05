@@ -58,7 +58,8 @@ begin
   puts "QA report: #{result.report_path}"
   if result.pdf_path
     puts "PDF: #{result.pdf_path}"
-    catalog = File.expand_path("../../adventure-finder/bin/af-catalog", __dir__)
+    front_door = File.expand_path(ENV.fetch("AF_ADVENTURE_FINDER_ROOT", "/Users/davidnorris/code/adventure-finder"))
+    catalog = File.join(front_door, "bin", "af-catalog")
     puts "Next: #{Shellwords.join([catalog, result.pdf_path])}"
   end
   puts "Build directory: #{result.build_dir}"

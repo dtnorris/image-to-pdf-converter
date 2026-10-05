@@ -23,7 +23,7 @@ class ProcessorTest < Minitest::Test
     assert_equal before, after, "source photographs must never be modified"
 
     dimensions = outputs.map do |path|
-      stdout = IO.popen(["python3", "-c", "from PIL import Image; import sys; print('x'.join(map(str, Image.open(sys.argv[1]).size)))", path], &:read).strip
+      stdout = IO.popen([ENV.fetch("BOOK_PHOTO_PYTHON"), "-c", "from PIL import Image; import sys; print('x'.join(map(str, Image.open(sys.argv[1]).size)))", path], &:read).strip
       stdout
     end
     assert_equal 1, dimensions.uniq.length, "all processed pages should share one canvas size"
@@ -40,7 +40,7 @@ class ProcessorTest < Minitest::Test
     input = File.join(root, "input")
     FileUtils.mkdir_p(input)
     image = File.join(input, "IMG_0001.jpg")
-    system("python3", "-c", "from PIL import Image; Image.new('RGB',(600,800),'white').save(r'#{image}','JPEG')", exception: true)
+    system(ENV.fetch("BOOK_PHOTO_PYTHON"), "-c", "from PIL import Image; Image.new('RGB',(600,800),'white').save(r'#{image}','JPEG')", exception: true)
 
     processor = BookPhotoToPdf::Processor.new(images: [image], build_dir: File.join(input, "build"))
     processor.run

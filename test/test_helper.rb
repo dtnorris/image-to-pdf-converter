@@ -5,6 +5,13 @@ require "fileutils"
 require "tmpdir"
 require "minitest/autorun"
 
+# Use the environment installed by bin/setup without requiring shell activation.
+# Keep an explicit interpreter override authoritative, including in CLI subprocesses.
+ENV["BOOK_PHOTO_PYTHON"] ||= begin
+  local_python = File.expand_path("../.venv/bin/python", __dir__)
+  File.file?(local_python) && File.executable?(local_python) ? local_python : "python3"
+end
+
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "book_photo_to_pdf"
 

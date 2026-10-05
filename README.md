@@ -151,6 +151,14 @@ To retain a local private regression fixture without committing it, place it und
 rake test
 ```
 
+After `bin/setup`, plain `rake` and `rake test` use `.venv/bin/python`
+without requiring activation or a PATH override. Tests honor an explicit
+`BOOK_PHOTO_PYTHON` first, then the executable repo-local interpreter, then
+`python3` on PATH. Fixture generation, image inspection, and CLI subprocesses
+use that same selection. Dependencies must already be installed; tests do not
+install packages or skip image/PDF checks when dependencies are missing.
+This selection is test-only; direct CLI use still follows the setup above.
+
 The committed tests cover:
 
 - mixed `.JPG` / `.jpg` discovery;
@@ -176,3 +184,14 @@ Deliberately out of scope:
 - automatic deletion or replacement of source photos.
 
 Those should only be added if measured downstream OCR results justify the extra processing.
+
+## Detached AdventureFinder front door
+
+The printed `af-catalog` continuation uses `AF_ADVENTURE_FINDER_ROOT`, defaulting to
+`/Users/davidnorris/code/adventure-finder`. Set it to the explicit front-door checkout
+on another machine or to `/Users/davidnorris/code/adventure-finder-production` when
+that is the intended operator entry point. This is independent of `AF_PROJECT_ROOT`,
+which names the component parent. Paths containing spaces remain shell-quoted.
+Normal and isolated-production component checkouts share the non-Git
+`/Users/davidnorris/code/adventure-finder-components` parent; no converter production
+twin is required. Validate/recreate the generated `.venv` when relocating it.
