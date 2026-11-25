@@ -74,12 +74,15 @@ export BOOK_PHOTO_PYTHON=/path/to/python
 
 ## Usage
 
-From the repository:
+Complete [setup](#requirements) and activate the virtual environment. From the
+repository, pass the directory containing your top-level JPG or JPEG files:
 
 ```bash
 bin/book-photo-to-pdf /path/to/book-photos
 ```
 
+Look in the input directory’s `build/` for the PDF, the page order in
+`input-manifest.txt`, and the per-image QA results in `processing-report.csv`.
 For an input directory named `ravenloft-test`, the default output is:
 
 ```text
@@ -99,7 +102,7 @@ ravenloft-test/
 
 The input manifest records the exact page order used for the run.
 
-After a successful PDF build, the CLI prints the exact `adventure-finder/bin/af-catalog`
+If you use AdventureFinder, the CLI also prints the exact `adventure-finder/bin/af-catalog`
 command for continuing the AdventureFinder catalog-ingest workflow.
 
 Useful options:
